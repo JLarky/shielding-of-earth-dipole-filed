@@ -12,6 +12,15 @@
 <literal>$a_i, b_i$</literal> из условия равенства нулю нормальной
 компоненты поля на магнитопаузе.
 
+Чтобы алгоритм simplex работал для нашего случая нужно использовать в
+качестве модельной функции <literal>$\frac{\partial U(\vec
+r_j)}{\partial n}$</literal>, а в качестве выходных значений
+<literal>$\vec B_d(\vec r_j) \cdot \vec n_j$</literal>.
+
+<literal>$\frac{\partial f_i(\vec r_j)}{\partial n} = \left (
+\frac{\sqrt{2}}{n_x} + \frac{1}{n_y} + \frac{1}{n_z} \right ) b_i
+f_i(\vec r_j)$</literal>
+
 * plot
 
 Построение наглядной демонстрации поля.
