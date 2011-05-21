@@ -1,0 +1,27 @@
+FC=f90 -moddir=bin
+FC_LIB_OPT=
+FC_OPT=
+COMMONFILES=$(wildcard ../inc/*.for)
+
+COMMONFILES := $(COMMONFILES:../inc/%.for=bin/%.o)
+
+bin/%.o: ../inc/%.for | bin
+	$(FC) $(FC_LIB_OPT) $< -c -o $@
+
+bin/%.o: %.for | $(COMMONFILES)
+	$(FC) $(FC_LIB_OPT) $< -c -o $@
+
+bin:
+	mkdir -p bin
+
+run: $(PROGNAME)
+	bin/$(PROGNAME) && $(RM) .compiled~
+
+$(PROGNAME): bin/$(PROGNAME)
+
+bin/$(PROGNAME): bin/$(PROGNAME).o $(COMMONFILES)
+	$(FC) $(FC_OPT) $< $(COMMONFILES) -o $@
+	date > .compiled~
+
+clean:
+	rm -f bin/* *~ && rmdir bin
