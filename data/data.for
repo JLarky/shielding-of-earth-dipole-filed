@@ -1,12 +1,9 @@
       program data
+        use utils
         implicit none
         integer :: fd1, fd2
         parameter(fd1 = 10)
         parameter(fd2 = 11)
-        type point
-          real*8 :: r(3) 
-        end type
-
         integer :: N, i
         real*8  :: theta, r, dr, old_dr
         type(point) :: r_0, old_r
@@ -30,7 +27,7 @@
         subset = get_subset(theta,N)
         old_r = subset(1)
         dr = dist(subset(1), subset(2))
-        call save_subset(subset)
+        call save_subset(subset, theta)
 
  1      do ! this loop will drop subsets which are too close with each other
            ! too close means r1 and r2 closer that 1Re
@@ -49,7 +46,7 @@
               goto 1
            end if
 
-           call save_subset(subset)
+           call save_subset(subset, theta)
            old_r = subset(1)
 
 !           r=sqrt(subset(1)%r(1)**2+subset(1)%r(2)**2+subset(1)%r(3)**2) ! dist from (0,0,0)
@@ -79,21 +76,28 @@
           integer :: N, i
           type(point) :: get_subset(N)
           real*8  :: theta, r_n, var_r, r, alpha
-          r=var_r(theta)
-          get_subset(1:N)%r(1)=r*cos(theta)
+          real*8  :: nx, nz
+          ! r = R(\theta). nx, nz are normals
+          call var_r_and_n(theta, r, nx, nz)
+
+          get_subset(1:N)%r(1)=r*cos(theta) ! r_x
+          get_subset(1:N)%n(1)=nx ! n_x
           r_n  = r*sin(theta)
           do i = 1, N
              alpha = (i-1.0)/n*2*3.1415928
-             get_subset(i)%r(2)=r_n*cos(alpha)
-             get_subset(i)%r(3)=r_n*sin(alpha)
+             get_subset(i)%r(2)=r_n*sin(alpha)
+             get_subset(i)%r(3)=r_n*cos(alpha)
+             get_subset(i)%n(2)=nz*sin(alpha)
+             get_subset(i)%n(3)=nz*cos(alpha)
           end do
         end function
-        subroutine save_subset(subset)
+        subroutine save_subset(subset, theta)
           type(point) :: subset(:)
           integer :: i
+          real*8 :: theta
           write(fd1,*) subset
           do i = 1, size(subset)
-             write(fd2,*) subset(i)%r
+             write(fd2,*) subset(i)%r, subset(i)%n, theta
           end do
         end subroutine
       end program

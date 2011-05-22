@@ -1,7 +1,14 @@
-      function var_r(theta)
+      module utils
+        type point
+          real*8 :: r(3), n(3)
+        end type
+      contains
+      subroutine var_r_and_n(theta, r, nx, nz)
         implicit none
         intent (in)  :: theta
-        real*8       :: theta, var_r
+        intent (out) :: r, nx, nz
+        real*8       :: theta, r, nx, nz
+        real*8       :: er_x, er_z, et_x, et_z, dr_dt, norm
         real*8, save :: r_0, alpha, b_z, p_dyn
 
         if (r_0.eq.0) then ! initialization
@@ -10,11 +17,20 @@
            r_0 = (10.22+1.29*tanh(0.184*(B_z+8.14)))*p_dyn**(-0.1515152)
            alpha = (0.58-0.007*B_z)*(1+0.024*log(p_dyn))
         end if
-        var_r = r_0*(2/(1+cos(theta)))**alpha
-      end function
+        r = r_0*(2/(1+cos(theta)))**alpha
 
-      module utils
-      contains
+        er_x = cos(theta)
+        er_z = sin(theta)
+        et_x = -sin(theta)
+        et_z = cos(theta)
+        dr_dt = r*alpha*sin(theta)/(1.+cos(theta))
+        nx = er_x - (dr_dt/r)*et_x
+        nz = er_z - (dr_dt/r)*et_z
+        norm = sqrt(1. + (dr_dt/r)**2)
+        nx = nx/norm
+        nz = nz/norm
+      end subroutine
+
       function dipole(m, r)
         implicit none
         intent (in)  :: m, r
