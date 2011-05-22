@@ -3,11 +3,13 @@
 
       print *, 'var_r'
       call test_var_r
+      print *, 'dipole'
+      call test_dipole
 
       contains
         subroutine assert(a,b)
            real*8  :: a,b
-           if (1d-7 .lt. (abs(a-b)/(a+b))) then
+           if (1d-7 .lt. (abs(a-b)/(abs(a)+abs(b)+1d-7))) then
               print *, a,'=/=',b
               stop 1
            end if
@@ -32,5 +34,21 @@
 !             print *, theta, var_r(theta)
              call assert(var_r(theta),tested_r(i))
           end do
+        end subroutine
+        subroutine test_dipole
+          use utils
+          real*8 :: m(3), r(3), d(3)
+          real*8 :: XGSW,YGSW,ZGSW,BXGSW,BYGSW,BZGSW
+          m(1:3) = 0.; m(3) = -30000.
+          r(1:3) = 0.; r(1) = -10.
+          d = dipole(m, r)
+          call assert(d(1), 0.d0)
+          call assert(d(2), 0.d0)
+          call assert(d(3), 30.d0)
+!          print *, d
+          xGSW = r(1);yGSW = r(2);zGSW = r(3);
+          call recalc_08 (2008,106,4,15,0,-400.d0,0.d0,0.d0)
+          call DIP_08 (XGSW,YGSW,ZGSW,BXGSW,BYGSW,BZGSW)
+!          print *, BXGSW,BYGSW,BZGSW
         end subroutine
       end program

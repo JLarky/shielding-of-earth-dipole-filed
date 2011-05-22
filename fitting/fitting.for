@@ -3,6 +3,7 @@ c
 C
 c----------------------------------------------------------------------
 c
+      use utils
       IMPLICIT  REAL * 8  (A - H, O - Z)
 
       CHARACTER*100 DATANAME
@@ -18,23 +19,33 @@ c----- new string and integer variables for reading sequential subsets of data -
 c-----------------------------------------------------------------------------------
 
 
-      PARAMETER (NLIN=13,NNON=2,NNON1=3,NTOT=15)
-      PARAMETER (NUMVTOT=11)       ! NUMVTOT=INDEPVAR+NDEPVAR (adjust in each individual case)
+      PARAMETER (NLIN=2,NNON=2,NNON1=NNON+1,NTOT=NLIN+NNON)
+      PARAMETER (NUMVTOT=9)       ! NUMVTOT=INDEPVAR+NDEPVAR (adjust in each individual case)
       PARAMETER (NPNT_UPP=1000000)  ! UPPER LIMIT ON THE NUMBER OF DATA POINTS
-      PARAMETER (N_ELEM_B=11000000) ! =NUMVTOT*NPNT_UPP  -
+      PARAMETER (N_ELEM_B=NUMVTOT*NPNT_UPP) ! =NUMVTOT*NPNT_UPP  -
       PARAMETER (NDEPVAR=3)
 c       three magnetic field components are 3 dependent variables (functions)
 C
 c  ATENTION:  Some of above parameters presents in common block /siplex_param/
 c                in order to use in simplex.for's functions SRMS,FUNK,SIMPLEX,AMOEBA,AMOTRY
 C
-      PARAMETER (INDEPVAR=8)             !   ADJUSTED TO X,Y,Z,PS,PD,WW1,WW2,WW3
+      PARAMETER (INDEPVAR=6)             !   ADJUSTED TO X,Y,Z,nx,ny,nz
 C      independent variables (arguments): in this case, we have three coordinates,
 c        tilt angle
 C
 
-      PARAMETER  (DATANAME='../data/sets/bz_m10-10_.dat')   !   ADJUST, WHEN USING A NEW DATA SET
-      PARAMETER (OUTFNAME="../out/model_par_back_m10-10.dat")
+      PARAMETER  (DATANAME='../data/data.dat')   !   ADJUST, WHEN USING A NEW DATA SET
+      PARAMETER (OUTFNAME="../model_par.dat")
+
+
+
+      real*8  :: m_dip(3), dip_b(3)
+      integer :: subset_len, subset_i
+      type point
+        real*8 :: r(3)
+      end type
+      type(point) :: cp
+      type(point), allocatable :: subset(:)
 
 
 
@@ -109,10 +120,8 @@ C
 
 c--------------------------------------------------
 c INITIAL VALUES FOR MODEL PARAMETERS
-	IA(1)=0
-	A(1)=1.0d0
-        A(14)=1.6d-1
-        A(15)=1.0d0
+	A(1:NTOT)=1.
+        A(NLIN+1:NTOT)=1.
 C--------------------------------------------------
 C
          NVNP=0  !  NVNP IS A COUNTER OF VARIABLE NONLINEAR PARAMETERS
@@ -161,10 +170,16 @@ C
       OPEN (UNIT=1,FILE=DATANAME,STATUS='OLD')
 C-------------------------------------------------------- ******************
 
+      read(1, *) subset_len
+      print *, subset_len
+
+      allocate(subset(subset_len))
+
+      call recalc_08 (2008,47,04,45,0,-400.d0,0.d0,0.d0)
 
       L=1
-   33 READ (1,777,END=34,ERR=27) IYEAR,IDAY,IHOUR,MIN,XGSM,YGSM,ZGSM,
-     * BXGSM,BYGSM,BZGSM,PD,BZIgsm,DST,WW1,WW2,WW3,WW4,WW5,WW6 
+   33 READ (1, *,END=34,ERR=27) subset
+      do subset_i = 1, subset_len
 
  777  FORMAT(I5,I4,2I3,3F8.2,3F9.1,F6.1,F6.1,f8.2,6F7.2)
 
@@ -173,37 +188,36 @@ C    CONVERT X,Y,Z,BX,BY,BZ TO SM !!!
           VX=-400.D0
           VY=0.D0
           VZ=0.D0
-          CALL RECALC_08(IYEAR,IDAY,IHOUR,MIN,0,VX,VY,VZ)
+!          CALL RECALC_08(IYEAR,IDAY,IHOUR,MIN,0,VX,VY,VZ)
           PS=PSI
 
           K=1
 C
-          B(K,L)=XGSM
+          B(K,L)=subset(subset_i)%r(1)
           K=K+1
-          B(K,L)=YGSM
+          B(K,L)=subset(subset_i)%r(2)
           K=K+1
-          B(K,L)=ZGSM
+          B(K,L)=subset(subset_i)%r(3)
           K=K+1
-          B(K,L)=PS
+          B(K,L)=1.
           K=K+1
-          B(K,L)=PD
+          B(K,L)=0.
           K=K+1
-          B(K,L)=WW1
-          K=K+1
-          B(K,L)=WW2
-          K=K+1
-          B(K,L)=WW3
-	
+          B(K,L)=0.
 
-          K=K+1
-          B(K,L)=BXGSM
-          K=K+1
-          B(K,L)=BYGSM
-          K=K+1
-          B(K,L)=BZGSM
+          cp = subset(subset_i)
+          r = sqrt(cp%r(1)**2+cp%r(2)**2+cp%r(3)**2)
+
+! \vec B = \frac{3(m.r)r-m r^2} {r^5}
+          m_dip(1:3) = 0.
+          m_dip(1) = 1.
+          
+          K=K+3
+          B(K-2:K, L)= dipole(m_dip, cp%r)
 
 C--------------------------------------------------------*******************
           L=L+1
+       end do
 
         GOTO 33
 
@@ -242,8 +256,12 @@ C
           GOTO 12345
        ENDIF
 
+       print *, 'a>', a
+
        CALL SIMPLEX (NPOINTS,NTOT,NLIN,A,IA,INDEPVAR,NDEPVAR,B,WEIGHT,
      _ NITER,MODEL_CF_RC_T3,P,NVNP1,NVNP)
+       print *, 'a>', a
+
 C
 C---------------------------------------------------
 
@@ -267,6 +285,9 @@ C---------------------------------------------------
           BBXM(I)=F(1)
           BBYM(I)=F(2)
           BBZM(I)=F(3)
+          print *, B(INDEPVAR+1:INDEPVAR+3,I)
+          print *, f(1:3)
+          stop
 C
  999   WRITE (2,202) (XI(M),M=1,3),
      *  F(1),B(INDEPVAR+1,I),F(2),B(INDEPVAR+2,I),F(3),B(INDEPVAR+3,I)

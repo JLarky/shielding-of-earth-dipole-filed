@@ -19,7 +19,7 @@
 
 cOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 c
-      SUBROUTINE MODEL_CF_RC_T3_CUSP 
+      SUBROUTINE MODEL_CF_RC_T3
      _(ID, A, XI, F, DER, IA, NTOT, NLIN, NNON, INDEPVAR, NDEPVAR, ICO)
 C
 C        ***  N.A. Tsyganenko ***  28.10.1997  ***
@@ -52,22 +52,21 @@ c       ICO = 0 - derivatives with respect to nonlinear parameters must be calcu
 c       ICO = 1 - only derivatives with respect to linear parameters must be calculated
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
-	 IMPLICIT  REAL * 8  (A - H, O - Z)
+	 implicit none
 C
          INTENT(IN)    :: ID, A, XI, IA, NTOT, NLIN
          INTENT(IN)    :: NNON, INDEPVAR, NDEPVAR, ICO
          INTENT(OUT)   :: F, DER
 
-         DIMENSION  F(NDEPVAR),DER(NDEPVAR,NTOT),A(NTOT),XI(INDEPVAR),
+         integer :: i, id, ico, NTOT, NLIN, NNON, INDEPVAR, NDEPVAR
+         real*8 :: x,y,z,nx,ny,nz, b1, b2, f1, f2, df_dn
+         real*8 :: F(NDEPVAR),DER(NDEPVAR,NTOT),A(NTOT),XI(INDEPVAR),
      _     IA(NTOT)
 c
-      COMMON /par/
-     *  ampl0,ampl1,dp0,c,Dtheta,PhiC0,alpha1,alpha2,YC0,powf,powth
-      COMMON /FPAR/ XAPPAD
 
 c     20,16,4,10,3
-      if ((NTOT.ne.20).or.(NLIN.ne.16).or.(NNON.ne.4).or.
-     _            (INDEPVAR.ne.10).or.(NDEPVAR.ne.3)) then
+      if ((NTOT.ne.4).or.(NLIN.ne.2).or.(NNON.ne.2).or.
+     _            (INDEPVAR.ne.6).or.(NDEPVAR.ne.3)) then
          print *, 'function MODELVEC was called with impropriet args'
          stop 1
       end if
@@ -75,105 +74,55 @@ c     20,16,4,10,3
 
 c     INPUT
 
+!      print *, '>', xi
+
          X=XI(1)
          Y=XI(2)
          Z=XI(3)
-         PS=XI(4)
-         PD=XI(5)
-         BZimf=XI(6)         
-         W1=XI(7)
-         W2=XI(8)
-         W3=XI(9)
-         W5=XI(10)
-         SPS=DSIN(PS)
+         nx=XI(4)
+         ny=XI(5)
+         nz=XI(6)
 
+         b1 = A(3)
+         b2 = A(4)
+         f1 = exp(sqrt(2.)*b1*x)*cos(b1*y)*sin(b1*z)
+         f2 = exp(sqrt(2.)*b2*x)*cos(b2*y)*sin(b2*z)
+!         print *, f1, f2
 
-      ampl0=-1.5
-      ampl1=-0.5
-      dp0=0.04
-      c=0.5
-      Dtheta=0.6
-c      Phic0=0.24
-c      Phic0=A(19)
-      Phic0=A(19)+A(20)*W5
-      alpha1=0.13
-      alpha2=0.03
-      YC0=5
-      powf=5
-      powth=5
+         df_dn = 0.
+         if (abs(nx).gt.0.) then
+            df_dn = df_dn + sqrt(2.)/nx
+         end if
+         if (abs(ny).gt.0.) then
+            df_dn = df_dn + 1./ny
+         end if
+         if (abs(nz).gt.0.) then
+            df_dn = df_dn + 1./nz
+         end if
 
-	XAPPAD=A(17)
-        RCSCALE=A(18)
+!         print *, 'a', a
+!         print *, 'f', f1, f2
+!         print *, df_dn
 
-
-	SPD=sqrt(PD/2.0)
-        CPD=sqrt(SPD)
-        SBZ=BZimf/5.0
-        
-c       BX=a(1)*CFX+(a(2)+a(12)*W2+a(13)*W3)*RCX+(a(3)+a(6)*CPD+ a(9)*W1)*T1X
-c                                               +(a(4)+a(7)*CPD+a(10)*W1)*T2X
-c                                               +(a(5)+a(8)*CPD+a(11)*W1)*T3X
-c						+(a(14)+a(15)SPD+a(16)*SBZ)*CUSP_X
-
-        DER(1, 1)=CFX
-        DER(2, 1)=CFY
-        DER(3, 1)=CFZ
-        DER(1, 2)=RCX
-        DER(2, 2)=RCY
-        DER(3, 2)=RCZ
-        DER(1, 3)=T1X
-        DER(2, 3)=T1Y
-        DER(3, 3)=T1Z
-        DER(1, 4)=T2X
-        DER(2, 4)=T2Y
-        DER(3, 4)=T2Z
-        DER(1, 5)=T3X
-        DER(2, 5)=T3Y
-        DER(3, 5)=T3Z
-        DER(1, 6)=T1X*CPD
-        DER(2, 6)=T1Y*CPD
-        DER(3, 6)=T1Z*CPD
-        DER(1, 7)=T2X*CPD
-        DER(2, 7)=T2Y*CPD
-        DER(3, 7)=T2Z*CPD
-        DER(1, 8)=T3X*CPD
-        DER(2, 8)=T3Y*CPD
-        DER(3, 8)=T3Z*CPD
-        DER(1, 9)=T1X*W1
-        DER(2, 9)=T1Y*W1
-        DER(3, 9)=T1Z*W1
-        DER(1,10)=T2X*W1
-        DER(2,10)=T2Y*W1
-        DER(3,10)=T2Z*W1
-        DER(1,11)=T3X*W1
-        DER(2,11)=T3Y*W1
-        DER(3,11)=T3Z*W1
-        DER(1,12)=RCX*W2
-        DER(2,12)=RCY*W2
-        DER(3,12)=RCZ*W2
-        DER(1,13)=RCX*W3
-        DER(2,13)=RCY*W3
-        DER(3,13)=RCZ*W3
-        DER(1,14)=C_BX
-        DER(2,14)=C_BY
-        DER(3,14)=C_BZ
-        DER(1,15)=C_BX*SPD
-        DER(2,15)=C_BY*SPD
-        DER(3,15)=C_BZ*SPD
-        DER(1,16)=C_BX*SBZ
-        DER(2,16)=C_BY*SBZ
-        DER(3,16)=C_BZ*SBZ
-        
-
+        DER(1, 1)=df_dn*b1*f1
+        DER(2, 1)=0.
+        DER(3, 1)=0.
+        DER(1, 2)=df_dn*b2*f2
+        DER(2, 2)=0.
+        DER(3, 2)=0.
 
         F(1)=0.d0               !     COMPONENTS OF THE TOTAL EXTERNAL FIELD
         F(2)=0.d0
         F(3)=0.d0
 
-        DO 1 I=1,NLIN
-        F(1)=F(1)+A(I)*DER(1,I)
-        F(2)=F(2)+A(I)*DER(2,I)
-   1    F(3)=F(3)+A(I)*DER(3,I)
+        do I=1,NLIN
+           F(1)=F(1)+.00001*A(I)*DER(1,I)
+           F(2)=F(2)+A(I)*DER(2,I)
+           F(3)=F(3)+A(I)*DER(3,I)
+        end do
+
+        print *, df_dn, b1, f1, df_dn*b1*f1
+        print *, df_dn, b2, f2, df_dn*b2*f2
 
       RETURN
       END

@@ -12,3 +12,28 @@
         end if
         var_r = r_0*(2/(1+cos(theta)))**alpha
       end function
+
+      module utils
+      contains
+      function dipole(m, r)
+        implicit none
+        intent (in)  :: m, r
+        real*8       :: m(3), r(3), dipole(3), s_m, mod_2, mod_5
+        integer      :: i, j
+
+        mod_2 = 0. ! r**2
+        do i = 1, 3
+           mod_2 = mod_2 + r(i)**2
+        end do
+!        mod = sqrt(mod_2)
+        mod_5 = mod_2**2*sqrt(mod_2) ! r**5
+
+        do i = 1, 3
+           s_m = 0.
+           do j = 1, 3
+              s_m = s_m + m(j)*r(j)
+           end do
+           dipole(i) = (3*s_m*r(i)-m(i)*mod_2 )/mod_5
+       end do
+      end function
+      end module
