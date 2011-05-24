@@ -64,7 +64,7 @@ C                      XGSM,YGSM,ZGSM,PS,BxGSM,ByGSM,BzGSM
      * SPS,CPS,DS3,CGST,SGST,PSI,A11,A21,A31,A12,A22,A32,A13,A23,A33,
      * E11,E21,E31,E12,E22,E32,E13,E23,E33
 c
-      EXTERNAL MODEL_CF_RC_T3 ! T97 moel with CF, RC and Tail modes
+      EXTERNAL MODEL_DIP_SH ! dipole shield
 c     You must change modelname few times in this file
 C
 C            The array B contains experimental data in the following order:
@@ -255,14 +255,14 @@ C
 
        IF (NNON.EQ.0) THEN
           Q=FUNK(XXXXX,NPOINTS,NTOT,NLIN,A,IA,INDEPVAR,NDEPVAR,B,
-     *    WEIGHT,MODEL_CF_RC_T3)
+     *    WEIGHT,MODEL_DIP_SH)
           GOTO 12345
        ENDIF
 
        print *, 'a>', a
 
        CALL SIMPLEX (NPOINTS,NTOT,NLIN,A,IA,INDEPVAR,NDEPVAR,B,WEIGHT,
-     _ NITER,MODEL_CF_RC_T3,P,NVNP1,NVNP)
+     _ NITER,MODEL_DIP_SH,P,NVNP1,NVNP)
 
 C
 C---------------------------------------------------
@@ -280,7 +280,7 @@ C---------------------------------------------------
           XI(IN)=B(IN,I)
           ENDDO
 
-          CALL MODEL_CF_RC_T3 (ID,A,XI,F,DER,IA,NTOT,NLIN,NNON,INDEPVAR,
+          CALL MODEL_DIP_SH (ID,A,XI,F,DER,IA,NTOT,NLIN,NNON,INDEPVAR,
      *      NDEPVAR,1)
           BBX(I)=B(INDEPVAR+1,I)
           BBY(I)=B(INDEPVAR+2,I)
