@@ -59,14 +59,15 @@ C
          INTENT(OUT)   :: F, DER
 
          integer :: i, id, ico, NTOT, NLIN, NNON, INDEPVAR, NDEPVAR
-         real*8 :: x,y,z,nx,ny,nz, b1, b2, f1, f2, df_dn
+         real*8 :: x,y,z,nx,ny,nz,df_dn
          real*8 :: F(NDEPVAR),DER(NDEPVAR,NTOT),A(NTOT),XI(INDEPVAR),
      _     IA(NTOT)
+         real*8 :: b(NNON), fi(NNON)
 c
 
-c     20,16,4,10,3
-      if ((NTOT.ne.4).or.(NLIN.ne.2).or.(NNON.ne.2).or.
-     _            (INDEPVAR.ne.6).or.(NDEPVAR.ne.3)) then
+c     10,5,5,6,1
+      if ((NTOT.ne.10).or.(NLIN.ne.5).or.(NNON.ne.5).or.
+     _            (INDEPVAR.ne.6).or.(NDEPVAR.ne.1)) then
          print *, 'function MODELVEC was called with impropriet args'
          stop 1
       end if
@@ -74,7 +75,7 @@ c     20,16,4,10,3
 
 c     INPUT
 
-!      print *, '>', xi
+!      print *, 'xi', xi
 
          X=XI(1)
          Y=XI(2)
@@ -83,11 +84,15 @@ c     INPUT
          ny=XI(5)
          nz=XI(6)
 
-         b1 = A(3)
-         b2 = A(4)
-         f1 = exp(sqrt(2.)*b1*x)*cos(b1*y)*sin(b1*z)
-         f2 = exp(sqrt(2.)*b2*x)*cos(b2*y)*sin(b2*z)
-!         print *, f1, f2
+         b(1:NNON) = A(NLIN+1:NNON)+.1 ! to del
+!      print *, 'anlin', a(NLIN+1:NTOT),'b', b
+!         print *, 'b', b
+         do i = 1, NNON
+            !TODO
+!            fi(i) = exp(sqrt(2.)*b(i)*x)*cos(b(i)*y)*sin(b(i)*z)
+            fi(i) = exp(sqrt(2.)*b(i)*x)*sin(b(i)*y)*cos(b(i)*z)
+         end do
+!         print *, 'fi', fi, '<'
 
          df_dn = 0.
          if (abs(nx).gt.0.) then
@@ -102,27 +107,27 @@ c     INPUT
 
 !         print *, 'a', a
 !         print *, 'f', f1, f2
-!         print *, df_dn
+!         print *, 'd', df_dn
 
-        DER(1, 1)=df_dn*b1*f1
-        DER(2, 1)=0.
-        DER(3, 1)=0.
-        DER(1, 2)=df_dn*b2*f2
-        DER(2, 2)=0.
-        DER(3, 2)=0.
+         do i = 1, NLIN
+            DER(1, i)=df_dn*b(i)*fi(i)
+         end do
+
+!         print *, 'd', der(1,1)
+        der = der*1.
 
         F(1)=0.d0               !     COMPONENTS OF THE TOTAL EXTERNAL FIELD
-        F(2)=0.d0
-        F(3)=0.d0
 
         do I=1,NLIN
-           F(1)=F(1)+.00001*A(I)*DER(1,I)
-           F(2)=F(2)+A(I)*DER(2,I)
-           F(3)=F(3)+A(I)*DER(3,I)
+!           print *, 'a', i, a(i)
+           F(1)=F(1)+A(I)*DER(1,I)
         end do
 
-        print *, df_dn, b1, f1, df_dn*b1*f1
-        print *, df_dn, b2, f2, df_dn*b2*f2
+!        print *, 'f', x, y, z, f(1)
+!        print *, 'f', x, y, z, der(1,1)
+
+!        print *, df_dn, b1, f1, df_dn*b1*f1
+!        print *, df_dn, b2, f2, df_dn*b2*f2
 
       RETURN
       END

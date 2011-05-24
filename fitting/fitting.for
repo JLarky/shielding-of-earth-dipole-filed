@@ -19,12 +19,12 @@ c----- new string and integer variables for reading sequential subsets of data -
 c-----------------------------------------------------------------------------------
 
 
-      PARAMETER (NLIN=2,NNON=2,NNON1=NNON+1,NTOT=NLIN+NNON)
-      PARAMETER (NUMVTOT=9)       ! NUMVTOT=INDEPVAR+NDEPVAR (adjust in each individual case)
+      PARAMETER (NLIN=5,NNON=5,NNON1=NNON+1,NTOT=NLIN+NNON)
+      PARAMETER (NUMVTOT=7)       ! NUMVTOT=INDEPVAR+NDEPVAR (adjust in each individual case)
       PARAMETER (NPNT_UPP=1000000)  ! UPPER LIMIT ON THE NUMBER OF DATA POINTS
       PARAMETER (N_ELEM_B=NUMVTOT*NPNT_UPP) ! =NUMVTOT*NPNT_UPP  -
-      PARAMETER (NDEPVAR=3)
-c       three magnetic field components are 3 dependent variables (functions)
+      PARAMETER (NDEPVAR=1)
+c       1 normal field component
 C
 c  ATENTION:  Some of above parameters presents in common block /siplex_param/
 c                in order to use in simplex.for's functions SRMS,FUNK,SIMPLEX,AMOEBA,AMOTRY
@@ -35,15 +35,11 @@ c        tilt angle
 C
 
       PARAMETER  (DATANAME='../data/data.dat')   !   ADJUST, WHEN USING A NEW DATA SET
-      PARAMETER (OUTFNAME="../model_par.dat")
-
+      PARAMETER (OUTFNAME="model_par.dat")
 
 
       real*8  :: m_dip(3), dip_b(3)
-      integer :: subset_len, subset_i
-      type point
-        real*8 :: r(3)
-      end type
+      integer :: subset_len, subset_i, s_i
       type(point) :: cp
       type(point), allocatable :: subset(:)
 
@@ -121,7 +117,11 @@ C
 c--------------------------------------------------
 c INITIAL VALUES FOR MODEL PARAMETERS
 	A(1:NTOT)=1.
-        A(NLIN+1:NTOT)=1.
+        !TODO
+        do i = nlin+1, ntot
+           A(i)=1.d0*(i-5.)
+        end do
+        print *, a
 C--------------------------------------------------
 C
          NVNP=0  !  NVNP IS A COUNTER OF VARIABLE NONLINEAR PARAMETERS
@@ -191,29 +191,32 @@ C    CONVERT X,Y,Z,BX,BY,BZ TO SM !!!
 !          CALL RECALC_08(IYEAR,IDAY,IHOUR,MIN,0,VX,VY,VZ)
           PS=PSI
 
+          cp = subset(subset_i)
+
           K=1
 C
-          B(K,L)=subset(subset_i)%r(1)
-          K=K+1
-          B(K,L)=subset(subset_i)%r(2)
-          K=K+1
-          B(K,L)=subset(subset_i)%r(3)
-          K=K+1
-          B(K,L)=1.
-          K=K+1
-          B(K,L)=0.
-          K=K+1
-          B(K,L)=0.
+          B(K:K+2,L)=cp%r
+          K=K+3
+          B(K:K+2,L)=cp%n
+          K=K+3
 
-          cp = subset(subset_i)
           r = sqrt(cp%r(1)**2+cp%r(2)**2+cp%r(3)**2)
 
-! \vec B = \frac{3(m.r)r-m r^2} {r^5}
-          m_dip(1:3) = 0.
-          m_dip(1) = 1.
-          
-          K=K+3
-          B(K-2:K, L)= dipole(m_dip, cp%r)
+!          m_dip = (/1000., 0., 0./)
+
+          !TODO:
+!          dip_b = 10.*dipole(m_dip, cp%r)
+          call DIP_08 (cp%r(1),cp%r(2),cp%r(3),BXGSW,BYGSW,BZGSW)
+          dip_b = (/BXGSW,BYGSW,BZGSW/)
+
+          B(K, L) = 0.
+          ! scalar mult
+          do s_i = 1, 3
+             B(K, L) = B(K, L) + cp%n(s_i)*dip_b(s_i)
+          end do
+!          print *, 'b_d', B(K, L)
+
+          K=K+1
 
 C--------------------------------------------------------*******************
           L=L+1
@@ -260,18 +263,18 @@ C
 
        CALL SIMPLEX (NPOINTS,NTOT,NLIN,A,IA,INDEPVAR,NDEPVAR,B,WEIGHT,
      _ NITER,MODEL_CF_RC_T3,P,NVNP1,NVNP)
-       print *, 'a>', a
 
 C
 C---------------------------------------------------
 
 12345  CONTINUE
+       print *, 'a>', q, a
 
       IF (ICOMPAR.EQ.1) THEN
 
        OPEN(UNIT=2,FILE='compar.dat')
 
-        DO 999 I=1,NPOINTS
+        DO I=1,NPOINTS
 
           DO IN=1,INDEPVAR
           XI(IN)=B(IN,I)
@@ -283,17 +286,18 @@ C---------------------------------------------------
           BBY(I)=B(INDEPVAR+2,I)
           BBZ(I)=B(INDEPVAR+3,I)
           BBXM(I)=F(1)
-          BBYM(I)=F(2)
-          BBZM(I)=F(3)
-          print *, B(INDEPVAR+1:INDEPVAR+3,I)
-          print *, f(1:3)
-          stop
+!          BBYM(I)=F(2)
+!          BBZM(I)=F(3)
+!          print *, B(INDEPVAR+1:INDEPVAR+3,I)
+!          print *, f(1)
 C
- 999   WRITE (2,202) (XI(M),M=1,3),
-     *  F(1),B(INDEPVAR+1,I),F(2),B(INDEPVAR+2,I),F(3),B(INDEPVAR+3,I)
+          WRITE (2,202) (XI(M),M=1,3),
+     *  F(1),B(INDEPVAR+1,I)!,F(2),B(INDEPVAR+2,I),F(3),B(INDEPVAR+3,I)
+       end do
+
        CLOSE(2)
       ENDIF    !   END OF CASE ICOMPAR=1
- 202  FORMAT(9F8.2)
+ 202  FORMAT(9F10.5)
 C---------------------------------------------------
 C
 c  Now, evaluate correlation coefficients between observed and model
@@ -306,19 +310,20 @@ c
       AVYM=0.
       AVZM=0.
 
-      DO 1917 I=1,NPOINTS
+      DO I=1,NPOINTS
       AVX=AVX+BBX(I)
-      AVY=AVY+BBY(I)
-      AVZ=AVZ+BBZ(I)
+!      AVY=AVY+BBY(I)
+!      AVZ=AVZ+BBZ(I)
       AVXM=AVXM+BBXM(I)
-      AVYM=AVYM+BBYM(I)
- 1917 AVZM=AVZM+BBZM(I)
+!      AVYM=AVYM+BBYM(I)
+! 1917 AVZM=AVZM+BBZM(I)
+      end do
       AVX=AVX/NPOINTS
-      AVY=AVY/NPOINTS
-      AVZ=AVZ/NPOINTS
+!      AVY=AVY/NPOINTS
+!      AVZ=AVZ/NPOINTS
       AVXM=AVXM/NPOINTS
-      AVYM=AVYM/NPOINTS
-      AVZM=AVZM/NPOINTS
+!      AVYM=AVYM/NPOINTS
+!      AVZM=AVZM/NPOINTS
 
       RX=0.
       RY=0.
@@ -329,23 +334,24 @@ c
       SXM=0.
       SYM=0.
       SZM=0.
-      DO 1918 I=1,NPOINTS
+      DO I=1,NPOINTS
       RX=RX+(BBX(I)-AVX)*(BBXM(I)-AVXM)
-      RY=RY+(BBY(I)-AVY)*(BBYM(I)-AVYM)
-      RZ=RZ+(BBZ(I)-AVZ)*(BBZM(I)-AVZM)
+!      RY=RY+(BBY(I)-AVY)*(BBYM(I)-AVYM)
+!      RZ=RZ+(BBZ(I)-AVZ)*(BBZM(I)-AVZM)
       SX=SX+(BBX(I)-AVX)**2
-      SY=SY+(BBY(I)-AVY)**2
-      SZ=SZ+(BBZ(I)-AVZ)**2
+!      SY=SY+(BBY(I)-AVY)**2
+!      SZ=SZ+(BBZ(I)-AVZ)**2
       SXM=SXM+(BBXM(I)-AVXM)**2
-      SYM=SYM+(BBYM(I)-AVYM)**2
- 1918 SZM=SZM+(BBZM(I)-AVZM)**2
+!      SYM=SYM+(BBYM(I)-AVYM)**2
+! 1918 SZM=SZM+(BBZM(I)-AVZM)**2
+      end do
       RX=RX/SQRT(SX*SXM)
-      RY=RY/SQRT(SY*SYM)
-      RZ=RZ/SQRT(SZ*SZM)
+!      RY=RY/SQRT(SY*SYM)
+!      RZ=RZ/SQRT(SZ*SZM)
       PRINT *, '  CORRELATIONS:'
-      PRINT 1920, RX,RY,RZ
+      PRINT 1920, RX!,RY,RZ
       OPEN(UNIT=1,FILE='correlat_pos.par')
-      WRITE (1,1920) RX,RY,RZ
+      WRITE (1,1920) RX!,RY,RZ
  1920 FORMAT('    RX=',F7.3,'   RY=',F7.3,'   RZ=',F7.3)
       CLOSE(1)
 

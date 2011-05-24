@@ -31,6 +31,7 @@
         nz = nz/norm
       end subroutine
 
+!     \vec B = \frac{3(m.r)r-m r^2} {r^5}
       function dipole(m, r)
         implicit none
         intent (in)  :: m, r
