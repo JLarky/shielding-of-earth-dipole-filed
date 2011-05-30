@@ -52,6 +52,7 @@ c       ICO = 0 - derivatives with respect to nonlinear parameters must be calcu
 c       ICO = 1 - only derivatives with respect to linear parameters must be calculated
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
+      use utils
 	 implicit none
 C
          INTENT(IN)    :: ID, A, XI, IA, NTOT, NLIN
@@ -62,7 +63,7 @@ C
          real*8 :: x,y,z,nx,ny,nz,df_dn
          real*8 :: F(NDEPVAR),DER(NDEPVAR,NTOT),A(NTOT),XI(INDEPVAR),
      _     IA(NTOT)
-         real*8 :: b(NNON), fi(NNON)
+         real*8 :: b(NNON), fi(NNON), U(NNON,3)
 c
 
 c     10,5,5,6,1
@@ -72,12 +73,11 @@ c     10,5,5,6,1
          stop 1
       end if
 
-
 c     INPUT
 
 !      print *, 'xi', xi
 
-         X=XI(1)
+         X=(XI(1))
          Y=XI(2)
          Z=XI(3)
          nx=XI(4)
@@ -87,40 +87,51 @@ c     INPUT
          b(1:NNON) = A(NLIN+1:NNON)+.1 ! to del
 !      print *, 'anlin', a(NLIN+1:NTOT),'b', b
 !         print *, 'b', b
-         do i = 1, NNON
-            !TODO
-!            fi(i) = exp(sqrt(2.)*b(i)*x)*cos(b(i)*y)*sin(b(i)*z)
-            fi(i) = exp(sqrt(2.)*b(i)*x)*sin(b(i)*y)*cos(b(i)*z)
+
+         U(1:NLIN,1:3) = 0.
+         do i = 1, NLIN
+            U(i,1)=U(i,1)+exp(sqrt(2.)*b(i)*x)
+     _           *cos(b(i)*y)*sin(b(i)*z)*sqrt(2.)*b(i)
+            U(i,2)=U(i,2)+exp(sqrt(2.)*b(i)*x)
+     _           *(-sin(b(i)*y))*sin(b(i)*z)*b(i)
+            U(i,3)=U(i,3)+exp(sqrt(2.)*b(i)*x)
+     _           *cos(b(i)*y)*cos(b(i)*z)*b(i)
          end do
 !         print *, 'fi', fi, '<'
-
-         df_dn = 0.
-         if (abs(nx).gt.0.) then
-            df_dn = df_dn + sqrt(2.)/nx
-         end if
-         if (abs(ny).gt.0.) then
-            df_dn = df_dn + 1./ny
-         end if
-         if (abs(nz).gt.0.) then
-            df_dn = df_dn + 1./nz
-         end if
 
 !         print *, 'a', a
 !         print *, 'f', f1, f2
 !         print *, 'd', df_dn
 
-         do i = 1, NLIN
-            DER(1, i)=df_dn*b(i)*fi(i)
-         end do
-
-!         print *, 'd', der(1,1)
-        der = der*1.
-
-        F(1)=0.d0               !     COMPONENTS OF THE TOTAL EXTERNAL FIELD
+        F(1)=0.d0
+        saved_f(1:3) = 0.
+        DER(1, 1:NLIN) = 0.
 
         do I=1,NLIN
-!           print *, 'a', i, a(i)
+!          print *, 'a', i, a(i)
+           ! - \grad U
+           saved_f = saved_f -A(I)*U(I,1:3)
+
+           if (abs(nx).gt.0.) then
+              DER(1, i) = DER(1, i)+U(I,1)/nx
+           end if
+
+           if (abs(ny).gt.0.) then
+              DER(1, i) = DER(1, i)+U(I,2)/ny
+           end if
+
+           if (abs(nz).gt.0.) then
+              DER(1, i) = DER(1, i)+U(I,3)/nz
+           end if
+
            F(1)=F(1)+A(I)*DER(1,I)
+!           print *
+!           print *, nx,ny,nz
+!           print *, saved_f(1:3)
+!           print *, U(i,1:3)
+!           print *, DER(i,1)
+!           print *, F(1)
+!           if (i.gt.1) then; stop; end if
         end do
 
 !        print *, 'f', x, y, z, f(1)

@@ -2,6 +2,7 @@
         type point
           real*8 :: r(3), n(3)
         end type
+        real*8 :: saved_f(3)
       contains
       subroutine var_r_and_n(theta, r, nx, nz)
         implicit none
