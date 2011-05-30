@@ -60,14 +60,14 @@ C
          INTENT(OUT)   :: F, DER
 
          integer :: i, id, ico, NTOT, NLIN, NNON, INDEPVAR, NDEPVAR
-         real*8 :: x,y,z,nx,ny,nz,df_dn
+         real*8 :: x,y,z,nx,ny,nz
          real*8 :: F(NDEPVAR),DER(NDEPVAR,NTOT),A(NTOT),XI(INDEPVAR),
      _     IA(NTOT)
-         real*8 :: b(NNON), fi(NNON), U(NNON,3)
+         real*8 :: fi(NNON), U(NNON,3), bi1, bi2, bi3
 c
 
 c     10,5,5,6,1
-      if ((NTOT.ne.10).or.(NLIN.ne.5).or.(NNON.ne.5).or.
+      if ((NTOT.ne.12).or.(NLIN.ne.3).or.(NNON.ne.9).or.
      _            (INDEPVAR.ne.6).or.(NDEPVAR.ne.1)) then
          print *, 'function MODELVEC was called with impropriet args'
          stop 1
@@ -75,40 +75,38 @@ c     10,5,5,6,1
 
 c     INPUT
 
-!      print *, 'xi', xi
+!         print *, 'xi', xi
+!      if (abs(xi(2)).lt.1d-5) then; print *, xi(1:3), 0.; end if
 
-         X=(XI(1))
+         X=XI(1)
          Y=XI(2)
          Z=XI(3)
          nx=XI(4)
          ny=XI(5)
          nz=XI(6)
 
-         b(1:NNON) = A(NLIN+1:NNON)+.1 ! to del
-!      print *, 'anlin', a(NLIN+1:NTOT),'b', b
-!         print *, 'b', b
-
          U(1:NLIN,1:3) = 0.
          do i = 1, NLIN
-            U(i,1)=U(i,1)+exp(sqrt(2.)*b(i)*x)
-     _           *cos(b(i)*y)*sin(b(i)*z)*sqrt(2.)*b(i)
-            U(i,2)=U(i,2)+exp(sqrt(2.)*b(i)*x)
-     _           *(-sin(b(i)*y))*sin(b(i)*z)*b(i)
-            U(i,3)=U(i,3)+exp(sqrt(2.)*b(i)*x)
-     _           *cos(b(i)*y)*cos(b(i)*z)*b(i)
+            bi1 = A(NLIN+(i-1)*3+1) !x
+            bi2 = A(NLIN+(i-1)*3+2) !y
+            bi3 = A(NLIN+(i-1)*3+3) !z
+
+            ! \frac{\partial fi}{\partial x,y,z}
+            U(i,1)=exp(sqrt(2.)*bi1*x)
+     _           *cos(bi2*y)*sin(bi3*z)*sqrt(2.)*bi1
+
+            U(i,2)=exp(sqrt(2.)*bi1*x)
+     _           *(-sin(bi2*y))*sin(bi3*z)*bi2
+
+            U(i,3)=exp(sqrt(2.)*bi1*x)
+     _           *cos(bi2*y)*cos(bi3*z)*bi3
          end do
-!         print *, 'fi', fi, '<'
 
-!         print *, 'a', a
-!         print *, 'f', f1, f2
-!         print *, 'd', df_dn
-
-        F(1)=0.d0
-        saved_f(1:3) = 0.
+        F(1)=0.d0           ! dU/dn
+        saved_f(1:3) = 0.   ! B_{CF}
         DER(1, 1:NLIN) = 0.
 
         do I=1,NLIN
-!          print *, 'a', i, a(i)
            ! - \grad U
            saved_f = saved_f -A(I)*U(I,1:3)
 
@@ -131,14 +129,9 @@ c     INPUT
 !           print *, U(i,1:3)
 !           print *, DER(i,1)
 !           print *, F(1)
-!           if (i.gt.1) then; stop; end if
+!           print *, bi1, bi2, bi3
+!           if (i.gt.nlin-1) then; stop; end if
         end do
-
-!        print *, 'f', x, y, z, f(1)
-!        print *, 'f', x, y, z, der(1,1)
-
-!        print *, df_dn, b1, f1, df_dn*b1*f1
-!        print *, df_dn, b2, f2, df_dn*b2*f2
 
       RETURN
       END

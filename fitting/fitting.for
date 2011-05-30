@@ -19,20 +19,20 @@ c----- new string and integer variables for reading sequential subsets of data -
 c-----------------------------------------------------------------------------------
 
 
-      PARAMETER (NLIN=5,NNON=5,NNON1=NNON+1,NTOT=NLIN+NNON)
-      PARAMETER (NUMVTOT=7)       ! NUMVTOT=INDEPVAR+NDEPVAR (adjust in each individual case)
-      PARAMETER (NPNT_UPP=1000000)  ! UPPER LIMIT ON THE NUMBER OF DATA POINTS
-      PARAMETER (N_ELEM_B=NUMVTOT*NPNT_UPP) ! =NUMVTOT*NPNT_UPP  -
-      PARAMETER (NDEPVAR=1)
-c       1 normal field component
-C
-c  ATENTION:  Some of above parameters presents in common block /siplex_param/
-c                in order to use in simplex.for's functions SRMS,FUNK,SIMPLEX,AMOEBA,AMOTRY
-C
+      PARAMETER (NLIN=3,NNON=NLIN*3,NNON1=NNON+1,NTOT=NLIN+NNON)
       PARAMETER (INDEPVAR=6)             !   ADJUSTED TO X,Y,Z,nx,ny,nz
 C      independent variables (arguments): in this case, we have three coordinates,
 c        tilt angle
 C
+      PARAMETER (NDEPVAR=1) ! 1 normal field component
+      PARAMETER (NUMVTOT=INDEPVAR+NDEPVAR) ! =INDEPVAR+NDEPVAR
+      PARAMETER (NPNT_UPP=1000000)  ! UPPER LIMIT ON THE NUMBER OF DATA POINTS
+      PARAMETER (N_ELEM_B=NUMVTOT*NPNT_UPP) ! =NUMVTOT*NPNT_UPP  -
+C
+c  ATENTION:  Some of above parameters presents in common block /siplex_param/
+c                in order to use in simplex.for's functions SRMS,FUNK,SIMPLEX,AMOEBA,AMOTRY
+C
+
 
       PARAMETER  (DATANAME='../data/data.dat')   !   ADJUST, WHEN USING A NEW DATA SET
       PARAMETER (OUTFNAME="model_par.dat")
@@ -118,9 +118,12 @@ c--------------------------------------------------
 c INITIAL VALUES FOR MODEL PARAMETERS
 	A(1:NTOT)=1.
         !TODO
-        do i = nlin+1, ntot
-           A(i)=1.d0*(i-5.)
-        end do
+!        do i = nlin+1, ntot
+!           A(i)=1.d0*(i-5.)
+!        end do
+!        do i = 0, nlin-1
+!           a(nlin+1+3*i) = .5d0*(i+1)
+!        end do
         print *, a
 C--------------------------------------------------
 C
@@ -183,24 +186,19 @@ C-------------------------------------------------------- ******************
 
  777  FORMAT(I5,I4,2I3,3F8.2,3F9.1,F6.1,F6.1,f8.2,6F7.2)
 
-C    CONVERT X,Y,Z,BX,BY,BZ TO SM !!!
-
-          VX=-400.D0
-          VY=0.D0
-          VZ=0.D0
-!          CALL RECALC_08(IYEAR,IDAY,IHOUR,MIN,0,VX,VY,VZ)
-          PS=PSI
-
           cp = subset(subset_i)
 
           K=1
 C
+
+!     indepvars: position (x,y,z)
           B(K:K+2,L)=cp%r
           K=K+3
+!     normal (nx,ny,nz)
           B(K:K+2,L)=cp%n
           K=K+3
 
-          r = sqrt(cp%r(1)**2+cp%r(2)**2+cp%r(3)**2)
+!          r = sqrt(cp%r(1)**2+cp%r(2)**2+cp%r(3)**2)
 
 !          m_dip = (/1000., 0., 0./)
 
@@ -209,12 +207,12 @@ C
           call DIP_08 (cp%r(1),cp%r(2),cp%r(3),BXGSW,BYGSW,BZGSW)
           dip_b = (/BXGSW,BYGSW,BZGSW/)
 
+!     ndepvar: (normal,Bd) --- nornal component of dipole field
           B(K, L) = 0.
           ! scalar mult
           do s_i = 1, 3
              B(K, L) = B(K, L) + cp%n(s_i)*dip_b(s_i)
           end do
-!          print *, 'b_d', B(K, L)
 
           K=K+1
 
