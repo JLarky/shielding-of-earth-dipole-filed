@@ -135,9 +135,9 @@ c INITIAL VALUES FOR MODEL PARAMETERS
 !           A(nlin+i)=i/5d0
 !        end do
         print *, a
-        do i = 1, ntot
-        print *, 1./a(i)
-        end do
+!        do i = 1, ntot
+!        print *, 1./a(i)
+!        end do
 !        stop 1
 C--------------------------------------------------
 C
@@ -219,11 +219,9 @@ C
           B(K:K+2,L)=cp%n
           K=K+3
 
+!          m_dip = (/1000., 0., 0./)
+!          dip_b = 10.*dipole(m_dip, cp%r)
 
-          m_dip = (/1000., 0., 0./)
-
-          !TODO:
-          dip_b = 10.*dipole(m_dip, cp%r)
           call DIP_08 (cp%r(1),cp%r(2),cp%r(3),BXGSW,BYGSW,BZGSW)
           dip_b = (/BXGSW,BYGSW,BZGSW/)
 
@@ -234,10 +232,6 @@ C
              B(K, L) = B(K, L) + cp%n(s_i)*dip_b(s_i)
           end do
 
-          print *
-          print *, cp%n
-          print *, dip_b
-          print *, b(k,l)
           K=K+1
 
 C--------------------------------------------------------*******************

@@ -76,11 +76,8 @@ c     10,5,5,6,1
       end if
 
 c     INPUT
-!           print *, 't', 1
-
 
 !         print *, 'xi', xi
-!      if (abs(xi(2)).lt.1d-5) then; print *, xi(1:3), 0.; end if
 
          X=XI(1)
          Y=XI(2)
@@ -94,12 +91,6 @@ c     INPUT
             bi1 = A(NLIN+(i-1)*3+1) !x
             bi2 = A(NLIN+(i-1)*3+2) !y
             bi3 = A(NLIN+(i-1)*3+3) !z
-
-!            bi1 = 1./(1.+i**bi1)
-!            bi2 = bi2+bi3
-!            bi3 = bi2
-!            bi3 = bi2+A(NLIN+(i-1)*3+3) !z
-!            bi3 = bi2
 
             ! \frac{\partial fi}{\partial x,y,z}
             U(i,1)=exp(sqrt(2.)*bi1*x)
@@ -124,19 +115,8 @@ c     INPUT
            DER(1, i) = U(I,1)*nx+U(I,2)*ny+U(I,3)*nz
 
            F(1)=F(1)+A(I)*DER(1,I)
-           if (1.eq.2) then
-           print *
-           print *, nx,ny,nz
-           print *, saved_f(1:3)
-           print *, U(i,1:3)
-           print *, DER(i,1), a(i)
-           print *, F(1)
-!           print *, bi1, bi2, bi3
-           if (i.gt.nlin-1) then; stop; end if
-           end if
-        end do
 
-!           print *, 't', 2
+        end do
 
       RETURN
       END
