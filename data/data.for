@@ -2,9 +2,12 @@
         use utils
         implicit none
         integer :: fd1, fd2, fd3
+        logical :: debug
         parameter(fd1 = 10)
         parameter(fd2 = 11)
         parameter(fd3 = 12)
+!        parameter(DEBUG = .True.)
+        parameter(DEBUG = .False.)
         integer :: N, i
         real*8  :: theta, r, dr, old_dr
         type(point) :: r_0, old_r
@@ -21,7 +24,11 @@
         open(fd2, file='points.dat')
         open(fd3, file='XZ.dat')
         N = 30                  ! number of points with same r (distance from Earth)
+        if (debug) then
+        write (fd1, *) 2, 'debug'
+        else
         write (fd1, *) N, 'number of points in subset'
+        end if
 
 !     initial subset with X \approx -100 Re
         theta = 2.85
@@ -98,10 +105,14 @@
           type(point) :: subset(:)
           integer :: i
           real*8 :: theta
+          if (debug) then
+          write(fd1,*) subset(1),subset(16)
+          else
           write(fd1,*) subset
+          end if
           do i = 1, size(subset)
              write(fd2,*) subset(i)%r, subset(i)%n, theta
-             if ((i.eq.1).or.(2*i.eq.N)) then
+             if ((i.eq.1).or.(2*(i-1).eq.N)) then
                 write(fd3,*) subset(i)%r, subset(i)%n, theta
              end if
           end do

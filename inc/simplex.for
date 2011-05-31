@@ -75,6 +75,8 @@ C
      * FM(150,150),      ! THE SIZE OF ARRAYS ASSUMED FOR THE
      * BB(150),XI(MX),U(150,150),V(150,150),W(150),XX(150)              !  MAXIMUM OF 150 LINEAR PARAMETERS; NO NEED TO CHANGE
 C                                                               ANYTHING, AS LONG AS THE ACTUAL NUMBER IS LOWER THAN THAT
+
+!      print *, 't', 4
       NVP=0
       DO 111 I=1,NNON
       IF (IA(ML+I).EQ.0) GOTO 111
@@ -106,6 +108,7 @@ C
     9        XI(L) = B(LS+L) !   FILL THE ARRAY XI WITH ARGUMENTS FOR THE CURRENT DATA POINT
          LS = LS + MX        !   PREPARE LS FOR THE NEXT DATA POINT
 
+!         print *, 't', 5, a(NTOT-1)
            CALL MODEL (K,A,XI,F,D,IA,M,ML,NNON,MX,MY,1)
              NM = 0
 
@@ -556,7 +559,6 @@ c*********************************************************************
             ELSE
                P(I,I)=P(I,I)+0.15
             ENDIF
-            print *, 'p', P(i,i)
             X(1:NVP)=P(I,1:NVP)
             Y(I)=FUNK(X,N,M,ML,A,IA,MX,MY,B,WEIGHT,MODEL)
             cur_Q=Y(I)
@@ -584,7 +586,7 @@ c**************************************************************************
        L = L +1
        print *, 'Error Q=', err_Q
 !       if ((err_Q.lt.1d-7).or.(L.gt.130)) then
-       if ((L.gt.30)) then
+       if ((L.gt.60)) then
           print *, 'Iterations= ',L
           IANOT=0
        else
@@ -750,6 +752,7 @@ C
        Q=ytry
        if (Q.lt.Q_old) then
             PRINT *, ' Amotry:  Q=',YTRY  ! THIS IS A TEST PRINT, TO KEEP TRACK OF Q
+!         print *, 't', 3
             Q_old=Q
             open (unit=1,file=NAMEPARAM)
             write (1,111) A

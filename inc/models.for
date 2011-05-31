@@ -67,13 +67,15 @@ C
 c
 
 c     10,5,5,6,1
-      if ((NTOT.ne.12).or.(NLIN.ne.3).or.(NNON.ne.9).or.
+      if ((NTOT.ne.20).or.(NLIN.ne.5).or.(NNON.ne.15).or.
      _            (INDEPVAR.ne.6).or.(NDEPVAR.ne.1)) then
          print *, 'function MODELVEC was called with impropriet args'
          stop 1
       end if
 
 c     INPUT
+!           print *, 't', 1
+
 
 !         print *, 'xi', xi
 !      if (abs(xi(2)).lt.1d-5) then; print *, xi(1:3), 0.; end if
@@ -132,6 +134,8 @@ c     INPUT
 !           print *, bi1, bi2, bi3
 !           if (i.gt.nlin-1) then; stop; end if
         end do
+
+!           print *, 't', 2
 
       RETURN
       END

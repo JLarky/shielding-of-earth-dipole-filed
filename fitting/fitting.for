@@ -19,7 +19,7 @@ c----- new string and integer variables for reading sequential subsets of data -
 c-----------------------------------------------------------------------------------
 
 
-      PARAMETER (NLIN=3,NNON=NLIN*3,NNON1=NNON+1,NTOT=NLIN+NNON)
+      PARAMETER (NLIN=5,NNON=NLIN*3,NNON1=NNON+1,NTOT=NLIN+NNON)
       PARAMETER (INDEPVAR=6)             !   ADJUSTED TO X,Y,Z,nx,ny,nz
 C      independent variables (arguments): in this case, we have three coordinates,
 c        tilt angle
@@ -118,11 +118,13 @@ c--------------------------------------------------
 c INITIAL VALUES FOR MODEL PARAMETERS
 	A(1:NTOT)=1.
         !TODO
-!        do i = nlin+1, ntot
-!           A(i)=1.d0*(i-5.)
-!        end do
+        do i = 1, nnon
+           A(nlin+i)=1./(i+.0)/3.d0
+        end do
+        print *, a
+!        stop 1
 !        do i = 0, nlin-1
-!           a(nlin+1+3*i) = .5d0*(i+1)
+!           a(nlin+1+3*i) = 10.d0*(i+0.)/(nlin+0.)
 !        end do
         print *, a
 C--------------------------------------------------
@@ -188,6 +190,13 @@ C-------------------------------------------------------- ******************
 
           cp = subset(subset_i)
 
+          r = sqrt(cp%r(1)**2+cp%r(2)**2+cp%r(3)**2)
+!          print *, r, sqrt(cp%n(1)**2+cp%n(3)**2)
+
+          if (r.gt.120.) then
+             goto 33
+          end if
+
           K=1
 C
 
@@ -198,14 +207,13 @@ C
           B(K:K+2,L)=cp%n
           K=K+3
 
-!          r = sqrt(cp%r(1)**2+cp%r(2)**2+cp%r(3)**2)
 
-!          m_dip = (/1000., 0., 0./)
+          m_dip = (/1000., 0., 0./)
 
           !TODO:
-!          dip_b = 10.*dipole(m_dip, cp%r)
+          dip_b = 10.*dipole(m_dip, cp%r)
           call DIP_08 (cp%r(1),cp%r(2),cp%r(3),BXGSW,BYGSW,BZGSW)
-          dip_b = (/BXGSW,BYGSW,BZGSW/)
+!          dip_b = (/BXGSW,BYGSW,BZGSW/)
 
 !     ndepvar: (normal,Bd) --- nornal component of dipole field
           B(K, L) = 0.
@@ -214,6 +222,10 @@ C
              B(K, L) = B(K, L) + cp%n(s_i)*dip_b(s_i)
           end do
 
+          print *
+          print *, cp%n
+          print *, dip_b
+          print *, b(k,l)
           K=K+1
 
 C--------------------------------------------------------*******************
@@ -226,6 +238,7 @@ C--------------------------------------------------------*******************
 c        PAUSE
    34   L=L-1
         CLOSE(1)
+!          stop
 
         NPOINTS =L
 C
@@ -262,6 +275,7 @@ C
        CALL SIMPLEX (NPOINTS,NTOT,NLIN,A,IA,INDEPVAR,NDEPVAR,B,WEIGHT,
      _ NITER,MODEL_DIP_SH,P,NVNP1,NVNP)
 
+       print *, 'lol'
 C
 C---------------------------------------------------
 
