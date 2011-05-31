@@ -19,7 +19,7 @@ c----- new string and integer variables for reading sequential subsets of data -
 c-----------------------------------------------------------------------------------
 
 
-      PARAMETER (NLIN=5,NNON=NLIN*3,NNON1=NNON+1,NTOT=NLIN+NNON)
+      PARAMETER (NLIN=8,NNON=NLIN*3,NNON1=NNON+1,NTOT=NLIN+NNON)
       PARAMETER (INDEPVAR=6)             !   ADJUSTED TO X,Y,Z,nx,ny,nz
 C      independent variables (arguments): in this case, we have three coordinates,
 c        tilt angle

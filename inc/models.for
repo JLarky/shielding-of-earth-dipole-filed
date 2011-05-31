@@ -67,7 +67,9 @@ C
 c
 
 c     10,5,5,6,1
-      if ((NTOT.ne.20).or.(NLIN.ne.5).or.(NNON.ne.15).or.
+!      if ((NTOT.ne.20).or.(NLIN.ne.5).or.(NNON.ne.15).or.
+!      if ((NTOT.ne.40).or.(NLIN.ne.10).or.(NNON.ne.30).or.
+      if ((NTOT.ne.32).or.(NLIN.ne.8).or.(NNON.ne.24).or.
      _            (INDEPVAR.ne.6).or.(NDEPVAR.ne.1)) then
          print *, 'function MODELVEC was called with impropriet args'
          stop 1
