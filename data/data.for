@@ -1,9 +1,10 @@
       program data
         use utils
         implicit none
-        integer :: fd1, fd2
+        integer :: fd1, fd2, fd3
         parameter(fd1 = 10)
         parameter(fd2 = 11)
+        parameter(fd3 = 12)
         integer :: N, i
         real*8  :: theta, r, dr, old_dr
         type(point) :: r_0, old_r
@@ -18,6 +19,7 @@
 
         open(fd1, file='data.dat')
         open(fd2, file='points.dat')
+        open(fd3, file='XZ.dat')
         N = 30                  ! number of points with same r (distance from Earth)
         write (fd1, *) N, 'number of points in subset'
 
@@ -59,6 +61,7 @@
 
         close(fd1)
         close(fd2)
+        close(fd3)
 
       contains
         function dist(r1,r2)
@@ -98,6 +101,9 @@
           write(fd1,*) subset
           do i = 1, size(subset)
              write(fd2,*) subset(i)%r, subset(i)%n, theta
+             if ((i.eq.1).or.(2*i.eq.N)) then
+                write(fd3,*) subset(i)%r, subset(i)%n, theta
+             end if
           end do
         end subroutine
       end program
