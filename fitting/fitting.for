@@ -40,6 +40,7 @@ C
 
       real*8  :: m_dip(3), dip_b(3)
       integer :: subset_len, subset_i, s_i
+      integer*4 timeArray(3)    ! Holds the hour, minute, and second
       type(point) :: cp
       type(point), allocatable :: subset(:)
 
@@ -118,12 +119,21 @@ c--------------------------------------------------
 c INITIAL VALUES FOR MODEL PARAMETERS
 	A(1:NTOT)=1.
         !TODO
+        call itime(timeArray)   ! Get the current time
+        i = rand(timeArray(1)+timeArray(2)+timeArray(3)) +0
+
+        do i = 1, nnon
+           A(nlin+i)=1./(100*rand()+.1d0)
+        end do
 !        do i = 1, nnon
 !           A(nlin+i)=1./(1.+i*5d0)
 !        end do
-        do i = 0, nlin-1
-           a(nlin+1+3*i) = 1./(1.+i*i*6d0)
-        end do
+!        do i = 0, nlin-1
+!           a(nlin+1+3*i) = 1./(1.+i*i*.5d0)
+!        end do
+!        do i = 1, nnon
+!           A(nlin+i)=i/5d0
+!        end do
         print *, a
         do i = 1, ntot
         print *, 1./a(i)
@@ -195,7 +205,7 @@ C-------------------------------------------------------- ******************
           r = sqrt(cp%r(1)**2+cp%r(2)**2+cp%r(3)**2)
 !          print *, r, sqrt(cp%n(1)**2+cp%n(3)**2)
 
-          if (r.gt.120.) then
+          if (abs(r-5).gt.120.) then
              goto 33
           end if
 
@@ -215,7 +225,7 @@ C
           !TODO:
           dip_b = 10.*dipole(m_dip, cp%r)
           call DIP_08 (cp%r(1),cp%r(2),cp%r(3),BXGSW,BYGSW,BZGSW)
-!          dip_b = (/BXGSW,BYGSW,BZGSW/)
+          dip_b = (/BXGSW,BYGSW,BZGSW/)
 
 !     ndepvar: (normal,Bd) --- nornal component of dipole field
           B(K, L) = 0.

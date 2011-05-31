@@ -1,6 +1,6 @@
 FC=f90 -moddir=bin
-FC_LIB_OPT=
-FC_OPT=
+FC_LIB_OPT=-O0
+FC_OPT=-O0
 COMMONFILES=$(wildcard ../inc/*.for)
 
 COMMONFILES := $(COMMONFILES:../inc/%.for=bin/%.o)
@@ -25,3 +25,5 @@ bin/$(PROGNAME): bin/$(PROGNAME).o $(COMMONFILES)
 
 clean:
 	rm -f bin/* *~ && rmdir bin
+
+bin/models.o: bin/utils.o

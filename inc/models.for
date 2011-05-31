@@ -92,6 +92,11 @@ c     INPUT
             bi1 = A(NLIN+(i-1)*3+1) !x
             bi2 = A(NLIN+(i-1)*3+2) !y
             bi3 = A(NLIN+(i-1)*3+3) !z
+
+!            bi1 = 1./(1.+i**bi1)
+!            bi2 = bi2+bi3
+!            bi3 = bi2
+!            bi3 = bi2+A(NLIN+(i-1)*3+3) !z
 !            bi3 = bi2
 
             ! \frac{\partial fi}{\partial x,y,z}
@@ -103,6 +108,7 @@ c     INPUT
 
             U(i,3)=exp(sqrt(2.)*bi1*x)
      _           *cos(bi2*y)*cos(bi3*z)*bi3
+!            print *, 'bi', bi1, bi2, bi3
          end do
 
         F(1)=0.d0           ! dU/dn
@@ -113,27 +119,19 @@ c     INPUT
            ! - \grad U
            saved_f = saved_f -A(I)*U(I,1:3)
 
-           if (abs(nx).gt.0.) then
-              DER(1, i) = DER(1, i)+U(I,1)/nx
-           end if
-
-           if (abs(ny).gt.0.) then
-              DER(1, i) = DER(1, i)+U(I,2)/ny
-           end if
-
-           if (abs(nz).gt.0.) then
-              DER(1, i) = DER(1, i)+U(I,3)/nz
-           end if
+           DER(1, i) = U(I,1)*nx+U(I,2)*ny+U(I,3)*nz
 
            F(1)=F(1)+A(I)*DER(1,I)
-!           print *
-!           print *, nx,ny,nz
-!           print *, saved_f(1:3)
-!           print *, U(i,1:3)
-!           print *, DER(i,1)
-!           print *, F(1)
+           if (1.eq.2) then
+           print *
+           print *, nx,ny,nz
+           print *, saved_f(1:3)
+           print *, U(i,1:3)
+           print *, DER(i,1), a(i)
+           print *, F(1)
 !           print *, bi1, bi2, bi3
-!           if (i.gt.nlin-1) then; stop; end if
+           if (i.gt.nlin-1) then; stop; end if
+           end if
         end do
 
 !           print *, 't', 2
