@@ -118,15 +118,17 @@ c--------------------------------------------------
 c INITIAL VALUES FOR MODEL PARAMETERS
 	A(1:NTOT)=1.
         !TODO
-        do i = 1, nnon
-           A(nlin+i)=1./(i+.0)/3.d0
+!        do i = 1, nnon
+!           A(nlin+i)=1./(1.+i*5d0)
+!        end do
+        do i = 0, nlin-1
+           a(nlin+1+3*i) = 1./(1.+i*i*6d0)
         end do
         print *, a
+        do i = 1, ntot
+        print *, 1./a(i)
+        end do
 !        stop 1
-!        do i = 0, nlin-1
-!           a(nlin+1+3*i) = 10.d0*(i+0.)/(nlin+0.)
-!        end do
-        print *, a
 C--------------------------------------------------
 C
          NVNP=0  !  NVNP IS A COUNTER OF VARIABLE NONLINEAR PARAMETERS
@@ -393,6 +395,9 @@ c      OUTFNAME="model_par.dat"
             write (1,113) B_rms
             close(1)
 
+       do i = 1, nnon
+          print *, 1./a(nlin+i)
+       end do
 C----------------------------------------------------------------------
       STOP
       END

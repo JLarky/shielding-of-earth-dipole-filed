@@ -92,6 +92,7 @@ c     INPUT
             bi1 = A(NLIN+(i-1)*3+1) !x
             bi2 = A(NLIN+(i-1)*3+2) !y
             bi3 = A(NLIN+(i-1)*3+3) !z
+!            bi3 = bi2
 
             ! \frac{\partial fi}{\partial x,y,z}
             U(i,1)=exp(sqrt(2.)*bi1*x)

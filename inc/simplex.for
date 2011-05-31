@@ -585,8 +585,8 @@ c**************************************************************************
        err_Q=abs(prev_Q-cur_Q)/abs(cur_Q)
        L = L +1
        print *, 'Error Q=', err_Q
-!       if ((err_Q.lt.1d-7).or.(L.gt.130)) then
-       if ((L.gt.60)) then
+       if ((err_Q.lt.1d-7).or.(L.gt.100)) then
+!       if ((L.gt.100)) then
           print *, 'Iterations= ',L
           IANOT=0
        else
