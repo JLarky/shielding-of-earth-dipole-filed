@@ -43,7 +43,9 @@
 
 !      call plot_trace(20,5,15,6,1,model_dip_sh_fp,
 !      call plot_trace(40,10,30,6,1,model_dip_sh_fp,
-      call plot_trace(32,8,24,6,1,model_dip_sh_fp,
+!      call plot_trace(32,8,24,6,1,model_dip_sh_fp,
+!      call plot_trace(10,5,5,6,1,model_dip_sh_fp,
+      call plot_trace(16,8,8,6,1,model_dip_sh_fp,
      _ '../fitting/model_par.dat')
 
 c      call plot_trace(20,16,4,10,3,TR_T02_CUSP,

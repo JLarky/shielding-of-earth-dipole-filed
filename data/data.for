@@ -23,7 +23,7 @@
         open(fd1, file='data.dat')
         open(fd2, file='points.dat')
         open(fd3, file='XZ.dat')
-        N = 120                  ! number of points with same r (distance from Earth)
+        N = 60                  ! number of points with same r (distance from Earth)
         if (debug) then
         write (fd1, *) 2, 'debug'
         else

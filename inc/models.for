@@ -69,7 +69,8 @@ c
 c     10,5,5,6,1
 !      if ((NTOT.ne.20).or.(NLIN.ne.5).or.(NNON.ne.15).or.
 !      if ((NTOT.ne.40).or.(NLIN.ne.10).or.(NNON.ne.30).or.
-      if ((NTOT.ne.32).or.(NLIN.ne.8).or.(NNON.ne.24).or.
+!      if ((NTOT.ne.32).or.(NLIN.ne.8).or.(NNON.ne.24).or.
+      if ((NTOT.ne.16).or.(NLIN.ne.8).or.(NNON.ne.8).or.
      _            (INDEPVAR.ne.6).or.(NDEPVAR.ne.1)) then
          print *, 'function MODELVEC was called with impropriet args'
          stop 1
@@ -88,9 +89,12 @@ c     INPUT
 
          U(1:NLIN,1:3) = 0.
          do i = 1, NLIN
-            bi1 = A(NLIN+(i-1)*3+1) !x
-            bi2 = A(NLIN+(i-1)*3+2) !y
-            bi3 = A(NLIN+(i-1)*3+3) !z
+!            bi1 = A(NLIN+(i-1)*3+1) !x
+!            bi2 = A(NLIN+(i-1)*3+2) !y
+!            bi3 = A(NLIN+(i-1)*3+3) !z
+            bi1 = a(nlin+i)
+            bi2 = bi1
+            bi3 = bi1
 
             ! \frac{\partial fi}{\partial x,y,z}
             U(i,1)=exp(sqrt(2.)*bi1*x)

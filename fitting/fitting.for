@@ -19,7 +19,7 @@ c----- new string and integer variables for reading sequential subsets of data -
 c-----------------------------------------------------------------------------------
 
 
-      PARAMETER (NLIN=8,NNON=NLIN*3,NNON1=NNON+1,NTOT=NLIN+NNON)
+      PARAMETER (NLIN=8,NNON=NLIN,NNON1=NNON+1,NTOT=NLIN+NNON)
       PARAMETER (INDEPVAR=6)             !   ADJUSTED TO X,Y,Z,nx,ny,nz
 C      independent variables (arguments): in this case, we have three coordinates,
 c        tilt angle
@@ -120,24 +120,27 @@ c INITIAL VALUES FOR MODEL PARAMETERS
 	A(1:NTOT)=1.
         !TODO
         call itime(timeArray)   ! Get the current time
-        i = rand(timeArray(1)+timeArray(2)+timeArray(3)) +0
+        irand = rand(timeArray(1)+timeArray(2)+timeArray(3)) +0
 
         do i = 1, nnon
-           A(nlin+i)=1./(100*rand()+.1d0)
+           A(nlin+i)=1./(100*rand(irand)+.1d0)
+           A(nlin+i)=1./(100*rand(irand)*rand(irand)+.1d0)
         end do
 !        do i = 1, nnon
 !           A(nlin+i)=1./(1.+i*5d0)
 !        end do
-!        do i = 0, nlin-1
-!           a(nlin+1+3*i) = 1./(1.+i*i*.5d0)
+!        do i = 1, nlin
+!           a(nlin+i) = 1./(1.+(i*i-1)*1.6d0)
+!           a(nlin+i) = 1./(1.+(i*i-1)*(1.d0+rand(irand)))
+!           a(nlin+i) = 1./200.*(2**(i+rand(irand)))
 !        end do
 !        do i = 1, nnon
 !           A(nlin+i)=i/5d0
 !        end do
         print *, a
-!        do i = 1, ntot
-!        print *, 1./a(i)
-!        end do
+        do i = 1, ntot
+        print *, 1./a(i)
+        end do
 !        stop 1
 C--------------------------------------------------
 C
@@ -222,6 +225,8 @@ C
 !          m_dip = (/1000., 0., 0./)
 !          dip_b = 10.*dipole(m_dip, cp%r)
 
+          SPS = 0.d0
+          CPS = 1.d0
           call DIP_08 (cp%r(1),cp%r(2),cp%r(3),BXGSW,BYGSW,BZGSW)
           dip_b = (/BXGSW,BYGSW,BZGSW/)
 
