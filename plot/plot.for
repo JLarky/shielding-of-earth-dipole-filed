@@ -94,7 +94,7 @@ c	  call TR_T02 (IOPT,PARMOD,PS,X,Y,Z,BXGSW,BYGSW,BZGSW)
 94        FORMAT(3F9.2,A,3F9.2,A,3F9.2,A,3F9.2)
 	  DD=SQRT(BXGSW**2+BYGSW**2+BZGSW**2)
 	  WD=SQRT((BXGSW+BX)**2+(BYGSW+BY)**2+(BZGSW+BZ)**2)
-	  write (10,94) X,Y,Z,'    MF= ', BX,BY,BZ, '    DF= ', 
+	  write (10,94) X,Y,Z,'    MF= ', BX,BY,BZ, '    DF= ',
      _	  BXGSW,BYGSW,BZGSW, '    ABS= ', DD,WD,DD-WD
       end do
       print *, 'profile done'
@@ -137,6 +137,7 @@ c
 
       call recalc_08 (2008,47,04,45,0,-400.d0,0.d0,0.d0) !  HERE JUST TO SPECIFIY THE EARTH'S DIPOLE MOMENT
 
+      OPEN(UNIT=1,FILE='linesg.dat')
 
       LIN_OUT= 'lines.dat'
       NUM_OUT='numpnt.dat'
@@ -188,11 +189,16 @@ c
 c
         ILINE=ILINE+1
         NUMPNT(ILINE)=LP
-          DO 22 N=1,LP
+          DO N=1,LP
            IPOINT=IPOINT+1
            STOREX(IPOINT)=XC(N)
            STOREY(IPOINT)=YC(N)
-   22      STOREZ(IPOINT)=ZC(N)
+           STOREZ(IPOINT)=ZC(N)
+           write (1, *) XC(N), YC(N), ZC(N)
+	  end do
+
+	write (1, *) ' '
+
 C
       IF(ABS(XF)+ABS(ZF).GT.5.) GOTO 1
       XMI=1.
@@ -262,6 +268,7 @@ C
 C
   13   CONTINUE
 C
+	    CLOSE(UNIT=1)
             OPEN(UNIT=1,FILE=LIN_OUT)
             WRITE(1,888) (STOREX(N),STOREY(N),STOREZ(N),N=1,IPOINT)
   888       FORMAT(3(1X,F7.2))
@@ -306,7 +313,7 @@ c     новые каспы
         integer :: IA(NTOT)
         real*8  :: parmod, ps, x, y, z, bx, by, bz
         integer :: iopt
-          
+
        XI(1)=X !X=XI(1)
        XI(2)=Y !Y=XI(2)
        XI(3)=Z !Z=XI(3)
