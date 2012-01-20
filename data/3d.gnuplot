@@ -1,10 +1,12 @@
-set output '3d.png'
-set terminal png size 800,600
+#!/usr/bin/gnuplot
+
+set term postscript enhanced color #portrait
+set output "3d.ps"
 set view 80,105,1,1
-splot './points.dat' w d t '3D'
+set size .9,1.1
 
-set output '2d.png'
-plot [20:-100][:] './points.dat' u 1:3 w d t 'X-Z plane'
-
-set output 'XZ.png'
-plot [20:-100][:] './XZ.dat' u 1:3 w p t 'X-Z plane, Y=0'
+set zrange [-29:30]
+set xlabel 'GSM_X' #offset -1,9
+set ylabel 'GSM_Y' offset 2,-1
+set zlabel 'GSM_Z' offset -1,9
+splot [:][-33:33] './points.dat' w d t ''
